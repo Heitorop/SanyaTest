@@ -3,22 +3,22 @@
   height: 100%;
   max-height: 48px;
   max-width: 340px;
-  text-align: start;
   color: #182f53;
+  text-align: start;
 
   &__label {
     font-size: 14px;
     line-height: 16px;
   }
   &__container {
-    cursor: pointer;
     margin-top: 10px;
+    cursor: pointer;
     display: flex;
     background-color: #fff;
     border-radius: 5px;
     border: 1px solid #d7e2e9;
     align-items: center;
-    padding: 14px 20px;
+    padding: 11px 20px;
 
     .select__content {
       width: 100%;
@@ -35,7 +35,7 @@
 
   &__icon-close {
     display: flex;
-    margin-left: 20px;
+    margin-left: 15px;
   }
 
   &__selection-block {
@@ -139,11 +139,31 @@
         margin-left: 12px;
       }
     }
+
+    &__suboptions {
+      display: flex;
+      flex-direction: column;
+      align-self: center;
+      row-gap: 15px;
+
+      p {
+        margin: 15px 0 0;
+      }
+    }
   }
 
   &--opened {
     .select__container {
       border-radius: 5px 5px 0 0;
+    }
+  }
+
+  &--error {
+    .select__container {
+      border: 1px solid #E47B7B;
+    }
+    .select__error {
+      color: #bf1d1d;
     }
   }
 }

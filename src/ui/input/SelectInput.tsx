@@ -1,29 +1,27 @@
 import { FunctionComponent, SyntheticEvent, useState } from "react";
-import Icon from "@mdi/react";
-import { mdiClose } from "@mdi/js";
-import "./SelectInput.scss";
+import { mdiClose, mdiChevronDown, mdiChevronUp } from "@mdi/js";
 import { useOutsideClick } from "../../hooks/useClickOutSide";
-
-interface Options {
-  id: string;
-  name: string;
-  variants?: Options[];
-  optionsTitle?: string;
-  options?: Options[];
-}
+import { Options, Errors } from "../../types";
+import Icon from "@mdi/react";
+import "./SelectInput.scss";
 
 interface SelectInputProps {
   id: string;
   options: Options[];
   label?: string;
-  clear?: boolean;
+  value: Options;
+  onChange: (value: Options) => void;
+  errors?: Errors[];
+  setErrors?: (value: Errors[]) => void;
 }
 
 const SelectInput: FunctionComponent<SelectInputProps> = ({ ...props }) => {
-  const [isOpen, setIsOpen] = useState(true);
-  const [checkedOptions, setCheckedOptions] = useState(
+  const [isFocused, setFocused] = useState(1);
+  const [isOpen, setIsOpen] = useState(false);
+  const [checkedOptions, setCheckedOptions] = useState<boolean[]>(
     new Array(props.options.length).fill(false)
   );
+  // VARIANTS
   const variantsArray = props.options.map((item) =>
     item.variants ? item.variants : null
   );
@@ -33,7 +31,21 @@ const SelectInput: FunctionComponent<SelectInputProps> = ({ ...props }) => {
   );
   const [checkedVariantsState, setCheckedVariantsState] =
     useState<boolean[][]>(checkedVariants);
-  const [selectedValues, setSelectedValues] = useState<string>("");
+
+  // SUBOPTIONS
+  const suboptionsArray = props.options.map((item) =>
+    item.options ? item.options : null
+  );
+  const suboptionsLength = suboptionsArray.map((item) =>
+    item ? item.length : 0
+  );
+  const checkedSuboptions = variantsArray.map<boolean[]>((item, index) =>
+    item ? new Array(suboptionsLength[index]).fill(false) : []
+  );
+  const [checkedSuboptionsState, setCheckedSuboptions] =
+    useState<boolean[][]>(checkedSuboptions);
+  const isError = props.errors?.flat().some((value) => value.invoke === true);
+  const isValue = props.value.variants !== undefined;
 
   const handleOptions = (position: number) => {
     const updatedOptions = checkedOptions.map<boolean>((item, index) =>
@@ -41,14 +53,23 @@ const SelectInput: FunctionComponent<SelectInputProps> = ({ ...props }) => {
     );
 
     setCheckedOptions(updatedOptions);
+
+    if (updatedOptions[position]) {
+      props.onChange({
+        name: props.options[position].name,
+        id: props.options[position].id,
+      });
+    }
+
+    const errors = props.errors?.map((error) => ({ ...error, invoke: false }));
+
+    props.setErrors && errors && props.setErrors(errors);
   };
 
   const handleVariants = (optionPosition: number, position: number) => {
     const updatedVariants = checkedVariantsState.map((item, index) =>
       index === optionPosition
-        ? item.map((variant, pos) =>
-            pos === position ? !variant : variant
-          )
+        ? item.map((variant, pos) => (pos === position ? !variant : variant))
         : item
     );
 
@@ -56,45 +77,121 @@ const SelectInput: FunctionComponent<SelectInputProps> = ({ ...props }) => {
 
     const selected = variantsArray[optionPosition]!.filter(
       (_, index) => updatedVariants[optionPosition][index]
-    ).map((item) => item.name);
+    ).map((item) => item);
 
-    setSelectedValues(selected.join(","));
+    props.onChange({ ...props.value, variants: selected });
   };
 
+  const handleSuboptions = (optionPosition: number, position: number) => {
+    const updatedSuboptions = checkedSuboptionsState.map((item, index) =>
+      index === optionPosition
+        ? item.map((option, pos) => (pos === position ? !option : false))
+        : item
+    );
+
+    setCheckedSuboptions(updatedSuboptions);
+
+    const selected = suboptionsArray[optionPosition]!.filter(
+      (_, index) => updatedSuboptions[optionPosition][index]
+    ).map((item) => item);
+
+    props.onChange({ ...props.value, options: selected });
+  };
+
+  const showValidationError = (extraCondition: boolean = false) => {
+    const condition = extraCondition
+      ? true
+      : !isValue && isFocused === 2 && props.value.name !== "Не палю";
+    if (condition && props.errors?.length) {
+      console.log(condition);
+      const errors = props.errors.map((error) =>
+        error.name === "selection" ? { ...error, invoke: true } : error
+      );
+      props.setErrors && props.setErrors(errors);
+    }
+  };
 
   const close = (e?: SyntheticEvent) => {
     e?.stopPropagation();
 
     setIsOpen(false);
+    if (!isValue && props.value.name !== "Не палю") {
+      clear();
+    }
+    showValidationError();
+  };
+  const clear = (e?: SyntheticEvent) => {
+    e?.stopPropagation();
+    props.onChange({ name: "", id: "" });
+    setCheckedOptions(Array(props.options.length).fill(false));
+    setCheckedVariantsState(checkedVariants);
+    setCheckedSuboptions(checkedSuboptions);
+    !isOpen ? showValidationError(true) : showValidationError();
   };
 
   const ref = useOutsideClick(close);
+
   return (
     <>
       <div
         ref={ref}
-        className={`select ${isOpen ? " select--opened" : ""}`}
-        onClick={() => setIsOpen(true)}
+        className={`select ${isOpen ? "select--opened" : ""} ${
+          !isValue && isFocused === 2 && !isOpen && isError
+            ? "select--error"
+            : ""
+        }`}
+        onClick={() => {
+          setIsOpen(!isOpen);
+          setFocused(2);
+        }}
       >
         {props.label && (
           <label className="select__label" htmlFor={props.id}>
             {props.label}
           </label>
         )}
-
         <div className="select__container">
           <div className="select__content" id={props.id}>
-            {selectedValues && selectedValues}
+            {/* VALUE && ERRORS */}
+            {props.value.name &&
+              !isError &&
+              (props.value.variants
+                ? props.value.name +
+                  " " +
+                  props.value.variants.map((item) => item.name).join(",")
+                : props.value.name)}
+            {!isOpen &&
+              !isValue &&
+              props.errors?.map(
+                (error) =>
+                  error.invoke && (
+                    <span className="select__error" key={error.name}>
+                      {error.message}
+                    </span>
+                  )
+              )}
           </div>
-          {isOpen && props.clear && (
+          {props.value.variants || props.value.name === "Не палю" ? (
+            <div className="select__icon-close" onClick={clear}>
+              <Icon path={mdiClose} size={1} color="black" />
+            </div>
+          ) : isOpen ? (
             <div className="select__icon-close" onClick={(e) => close(e)}>
-              <Icon path={mdiClose} size={0.8} color="black" />
+              <Icon path={mdiChevronUp} size={1} color="black" />
+            </div>
+          ) : (
+            <div className="select__icon-close" onClick={(e) => close(e)}>
+              <Icon path={mdiChevronDown} size={1} color="black" />
             </div>
           )}
         </div>
         {isOpen && (
-          <div className="select__selection-block">
-            {props.options?.map((item, opionIndex) => {
+          <div
+            className="select__selection-block"
+            onClick={(e) => e.stopPropagation()}
+          >
+            {/* Options */}
+            {props.options?.map((item, itemIndex) => {
               return (
                 <div className="select__selection-item" key={item.id}>
                   <label>
@@ -103,15 +200,16 @@ const SelectInput: FunctionComponent<SelectInputProps> = ({ ...props }) => {
                       id={item.name + item.id}
                       name={item.name}
                       value={item.name}
-                      checked={checkedOptions[opionIndex]}
-                      onChange={() => handleOptions(opionIndex)}
+                      checked={checkedOptions[itemIndex]}
+                      onChange={() => handleOptions(itemIndex)}
                     />
                     <span className="checkmark-radio"></span>
                     <span>{item.name}</span>
                   </label>
-                  {item.variants && (
+                  {/* Variants */}
+                  {checkedOptions[itemIndex] && item.variants && (
                     <div className="select__selection-item__variants">
-                      {item?.variants.map((variant, variantIndex) => {
+                      {item.variants.map((variant, variantIndex) => {
                         return (
                           <label key={variant.name} id={variant.id}>
                             <input
@@ -120,14 +218,42 @@ const SelectInput: FunctionComponent<SelectInputProps> = ({ ...props }) => {
                               name={variant.name}
                               value={variant.name}
                               checked={
-                                checkedVariantsState[opionIndex][variantIndex]
+                                checkedVariantsState[itemIndex][variantIndex]
                               }
                               onChange={() =>
-                                handleVariants(opionIndex, variantIndex)
+                                handleVariants(itemIndex, variantIndex)
                               }
                             />
                             <span className="checkmark"></span>
                             <span>{variant.name}</span>
+                          </label>
+                        );
+                      })}
+                    </div>
+                  )}
+                  {/* SubOptions */}
+                  {checkedOptions[itemIndex] && item.options && (
+                    <div className="select__selection-item__suboptions">
+                      {item.optionsTitle && <p>{item.optionsTitle}</p>}
+                      {item.options.map((option, subOptionIndex) => {
+                        return (
+                          <label key={option.name} id={option.id}>
+                            <input
+                              type="radio"
+                              id={option.id}
+                              name={option.name}
+                              value={option.name}
+                              checked={
+                                checkedSuboptionsState[itemIndex][
+                                  subOptionIndex
+                                ]
+                              }
+                              onChange={() =>
+                                handleSuboptions(itemIndex, subOptionIndex)
+                              }
+                            />
+                            <span className="checkmark-radio"></span>
+                            <span>{option.name}</span>
                           </label>
                         );
                       })}
