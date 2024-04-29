@@ -103,7 +103,6 @@ const SelectInput: FunctionComponent<SelectInputProps> = ({ ...props }) => {
       ? true
       : !isValue && isFocused === 2 && props.value.name !== "Не палю";
     if (condition && props.errors?.length) {
-      console.log(condition);
       const errors = props.errors.map((error) =>
         error.name === "selection" ? { ...error, invoke: true } : error
       );
