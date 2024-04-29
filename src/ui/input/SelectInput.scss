@@ -45,6 +45,100 @@
     border: 1px solid #d7e2e9;
     border-top: 2px solid #259ac2;
     box-shadow: 5px 5px 20px 0px #182f5333;
+    display: flex;
+    flex-direction: column;
+    font-size: 16px;
+    line-height: 19px;
+  }
+
+  &__selection-item {
+    display: flex;
+    flex-direction: column;
+    max-width: 270px;
+    margin-top: 10px;
+    label {
+      display: flex;
+      position: relative;
+    }
+    input {
+      margin: 0;
+      width: 20px;
+      height: 20px;
+    }
+    input[type="radio"] {
+      &:checked ~ .checkmark-radio {
+        background-color: #259ac2;
+        /* Show the checkmark when checked */
+        &:after {
+          display: block;
+        }
+      }
+    }
+
+    input[type="checkbox"] {
+      &:checked ~ .checkmark {
+        background-color: #259ac2;
+        /* Show the checkmark when checked */
+        &:after {
+          display: block;
+        }
+      }
+    }
+
+    span {
+      margin-left: 10px;
+    }
+
+    .checkmark {
+      position: absolute;
+      top: 0;
+      left: 0;
+      height: 20px;
+      width: 20px;
+      margin: 0;
+      border-radius: 3px;
+      /* Create the checkmark/indicator (hidden when not checked) */
+      &:after {
+        content: url("../../assets/checkMark.svg");
+        position: absolute;
+        display: none;
+        top: 50%;
+        left: 50%;
+        transform: translate(-50%, -55%);
+      }
+      &-radio {
+        position: absolute;
+        top: 2px;
+        left: 2px;
+        height: 16px;
+        width: 16px;
+        border-radius: 30px;
+        margin: 0;
+        /* Create the checkmark/indicator (hidden when not checked) */
+        &:after {
+          content: "";
+          position: absolute;
+          display: none;
+        }
+      }
+    }
+
+    &:first-child {
+      margin-top: 0;
+    }
+
+    &__variants {
+      display: grid;
+      grid-template-columns: repeat(2, 1fr);
+      grid-template-rows: auto;
+      grid-column-gap: auto;
+      grid-row-gap: 10px;
+      margin: 10px 0 0 23px;
+
+      span {
+        margin-left: 12px;
+      }
+    }
   }
 
   &--opened {

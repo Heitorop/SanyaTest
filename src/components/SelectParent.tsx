@@ -1,12 +1,11 @@
-import { FunctionComponent, memo } from "react";
+import { FunctionComponent } from "react";
 import SelectInput from "../ui/input/SelectInput";
 import mockData from "../mockData.json";
 
 const SelectParent: FunctionComponent = ({ ...props }) => {
-  const MemoSelect = memo(SelectInput);
   return (
     <>
-      <MemoSelect
+      <SelectInput
         clear={true}
         id="select"
         label="Паління"

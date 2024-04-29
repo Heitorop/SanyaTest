@@ -1,22 +1,22 @@
 [
   {
     "id": "smoke-1",
-    "option": { "name": "Палю" },
+    "name": "Палю",
     "variants": [
-      { "name": "Цигарки" },
-      { "name": "Вейп" },
-      { "name": "Тютюн" },
-      { "name": "IQOS" }
+      { "id": "smoke-1-1","name": "Цигарки" },
+      {"id": "smoke-1-2", "name": "Вейп" },
+      { "id": "smoke-1-3","name": "Тютюн" },
+      { "id": "smoke-1-4","name": "IQOS" }
     ],
     "optionsTitle": "Готовий обмежитись?",
     "options": [
-      { "name": "Ні" },
-      { "name": "Тільки на балконі" },
-      { "name": "Не в квартирі" }
+      { "id": "smoke-option-1", "name": "Ні" },
+      { "id": "smoke-option-2", "name": "Тільки на балконі" },
+      { "id": "smoke-option-3", "name": "Не в квартирі" }
     ]
   },
   {
     "id": "smoke-2",
-    "option": { "name": "Не палю" }
+    "name": "Не палю"
   }
 ]
