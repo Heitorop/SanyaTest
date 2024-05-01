@@ -178,7 +178,10 @@ const SelectInput: FunctionComponent<SelectInputProps> = ({ ...props }) => {
               <Icon path={mdiChevronUp} size={1} color="black" />
             </div>
           ) : (
-            <div className="select__icon-close" onClick={(e) => close(e)}>
+            <div className="select__icon-close" onClick={() => {
+              setIsOpen(!isOpen);
+              setFocused(2);
+            }}>
               <Icon path={mdiChevronDown} size={1} color="black" />
             </div>
           )}
