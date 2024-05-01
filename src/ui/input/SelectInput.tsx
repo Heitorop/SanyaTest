@@ -148,6 +148,7 @@ const SelectInput: FunctionComponent<SelectInputProps> = ({ ...props }) => {
           onClick={() => {
             setIsOpen(!isOpen);
             setFocused(2);
+            showValidationError();
           }}
         >
           <div className="select__content" id={props.id}>
@@ -178,10 +179,13 @@ const SelectInput: FunctionComponent<SelectInputProps> = ({ ...props }) => {
               <Icon path={mdiChevronUp} size={1} color="black" />
             </div>
           ) : (
-            <div className="select__icon-close" onClick={() => {
-              setIsOpen(!isOpen);
-              setFocused(2);
-            }}>
+            <div
+              className="select__icon-close"
+              onClick={() => {
+                setIsOpen(!isOpen);
+                setFocused(2);
+              }}
+            >
               <Icon path={mdiChevronDown} size={1} color="black" />
             </div>
           )}
