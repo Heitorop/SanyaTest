@@ -46,6 +46,7 @@ const SelectInput: FunctionComponent<SelectInputProps> = ({ ...props }) => {
     useState<boolean[][]>(checkedSuboptions);
   const isError = props.errors?.flat().some((value) => value.invoke === true);
   const isValue = props.value.variants !== undefined;
+  const errorCondition = !isValue && !isOpen && isFocused === 2;
 
   const handleOptions = (position: number) => {
     const updatedOptions = checkedOptions.map<boolean>((item, index) =>
@@ -112,7 +113,6 @@ const SelectInput: FunctionComponent<SelectInputProps> = ({ ...props }) => {
 
   const close = (e?: SyntheticEvent) => {
     e?.stopPropagation();
-
     setIsOpen(false);
     if (!isValue && props.value.name !== "Не палю") {
       clear();
@@ -133,23 +133,23 @@ const SelectInput: FunctionComponent<SelectInputProps> = ({ ...props }) => {
   return (
     <>
       <div
-        ref={ref}
         className={`select ${isOpen ? "select--opened" : ""} ${
-          !isValue && isFocused === 2 && !isOpen && isError
-            ? "select--error"
-            : ""
+          errorCondition && isError ? "select--error" : ""
         }`}
-        onClick={() => {
-          setIsOpen(!isOpen);
-          setFocused(2);
-        }}
       >
         {props.label && (
           <label className="select__label" htmlFor={props.id}>
             {props.label}
           </label>
         )}
-        <div className="select__container">
+        <div
+          className="select__container"
+          ref={ref}
+          onClick={() => {
+            setIsOpen(!isOpen);
+            setFocused(2);
+          }}
+        >
           <div className="select__content" id={props.id}>
             {/* VALUE && ERRORS */}
             {props.value.name &&
@@ -159,8 +159,7 @@ const SelectInput: FunctionComponent<SelectInputProps> = ({ ...props }) => {
                   " " +
                   props.value.variants.map((item) => item.name).join(",")
                 : props.value.name)}
-            {!isOpen &&
-              !isValue &&
+            {errorCondition &&
               props.errors?.map(
                 (error) =>
                   error.invoke && (
@@ -183,86 +182,86 @@ const SelectInput: FunctionComponent<SelectInputProps> = ({ ...props }) => {
               <Icon path={mdiChevronDown} size={1} color="black" />
             </div>
           )}
+          {isOpen && (
+            <div
+              className="select__selection-block"
+              onClick={(e) => e.stopPropagation()}
+            >
+              {/* Options */}
+              {props.options?.map((item, itemIndex) => {
+                return (
+                  <div className="select__selection-item" key={item.id}>
+                    <label>
+                      <input
+                        type="radio"
+                        id={item.name + item.id}
+                        name={item.name}
+                        value={item.name}
+                        checked={checkedOptions[itemIndex]}
+                        onChange={() => handleOptions(itemIndex)}
+                      />
+                      <span className="checkmark-radio"></span>
+                      <span>{item.name}</span>
+                    </label>
+                    {/* Variants */}
+                    {checkedOptions[itemIndex] && item.variants && (
+                      <div className="select__selection-item__variants">
+                        {item.variants.map((variant, variantIndex) => {
+                          return (
+                            <label key={variant.name} id={variant.id}>
+                              <input
+                                type="checkbox"
+                                id={variant.id}
+                                name={variant.name}
+                                value={variant.name}
+                                checked={
+                                  checkedVariantsState[itemIndex][variantIndex]
+                                }
+                                onChange={() =>
+                                  handleVariants(itemIndex, variantIndex)
+                                }
+                              />
+                              <span className="checkmark"></span>
+                              <span>{variant.name}</span>
+                            </label>
+                          );
+                        })}
+                      </div>
+                    )}
+                    {/* SubOptions */}
+                    {checkedOptions[itemIndex] && item.options && (
+                      <div className="select__selection-item__suboptions">
+                        {item.optionsTitle && <p>{item.optionsTitle}</p>}
+                        {item.options.map((option, subOptionIndex) => {
+                          return (
+                            <label key={option.name} id={option.id}>
+                              <input
+                                type="radio"
+                                id={option.id}
+                                name={option.name}
+                                value={option.name}
+                                checked={
+                                  checkedSuboptionsState[itemIndex][
+                                    subOptionIndex
+                                  ]
+                                }
+                                onChange={() =>
+                                  handleSuboptions(itemIndex, subOptionIndex)
+                                }
+                              />
+                              <span className="checkmark-radio"></span>
+                              <span>{option.name}</span>
+                            </label>
+                          );
+                        })}
+                      </div>
+                    )}
+                  </div>
+                );
+              })}
+            </div>
+          )}
         </div>
-        {isOpen && (
-          <div
-            className="select__selection-block"
-            onClick={(e) => e.stopPropagation()}
-          >
-            {/* Options */}
-            {props.options?.map((item, itemIndex) => {
-              return (
-                <div className="select__selection-item" key={item.id}>
-                  <label>
-                    <input
-                      type="radio"
-                      id={item.name + item.id}
-                      name={item.name}
-                      value={item.name}
-                      checked={checkedOptions[itemIndex]}
-                      onChange={() => handleOptions(itemIndex)}
-                    />
-                    <span className="checkmark-radio"></span>
-                    <span>{item.name}</span>
-                  </label>
-                  {/* Variants */}
-                  {checkedOptions[itemIndex] && item.variants && (
-                    <div className="select__selection-item__variants">
-                      {item.variants.map((variant, variantIndex) => {
-                        return (
-                          <label key={variant.name} id={variant.id}>
-                            <input
-                              type="checkbox"
-                              id={variant.id}
-                              name={variant.name}
-                              value={variant.name}
-                              checked={
-                                checkedVariantsState[itemIndex][variantIndex]
-                              }
-                              onChange={() =>
-                                handleVariants(itemIndex, variantIndex)
-                              }
-                            />
-                            <span className="checkmark"></span>
-                            <span>{variant.name}</span>
-                          </label>
-                        );
-                      })}
-                    </div>
-                  )}
-                  {/* SubOptions */}
-                  {checkedOptions[itemIndex] && item.options && (
-                    <div className="select__selection-item__suboptions">
-                      {item.optionsTitle && <p>{item.optionsTitle}</p>}
-                      {item.options.map((option, subOptionIndex) => {
-                        return (
-                          <label key={option.name} id={option.id}>
-                            <input
-                              type="radio"
-                              id={option.id}
-                              name={option.name}
-                              value={option.name}
-                              checked={
-                                checkedSuboptionsState[itemIndex][
-                                  subOptionIndex
-                                ]
-                              }
-                              onChange={() =>
-                                handleSuboptions(itemIndex, subOptionIndex)
-                              }
-                            />
-                            <span className="checkmark-radio"></span>
-                            <span>{option.name}</span>
-                          </label>
-                        );
-                      })}
-                    </div>
-                  )}
-                </div>
-              );
-            })}
-          </div>
-        )}
       </div>
     </>
   );

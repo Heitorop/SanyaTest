@@ -22,5 +22,8 @@
   },
   "include": [
     "src"
+  ],
+  "files": [
+    "./globala.d.ts"
   ]
 }
